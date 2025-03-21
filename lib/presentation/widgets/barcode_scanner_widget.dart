@@ -10,11 +10,13 @@ typedef BarcodeCallback = void Function(String code, String format);
 class BarcodeScannerWidget extends StatefulWidget {
   final BarcodeCallback onBarcodeDetected;
   final Color bracketColor;
+  final MobileScannerController controller;
 
   const BarcodeScannerWidget({
     super.key,
     required this.onBarcodeDetected,
     required this.bracketColor,
+    required this.controller,
   });
 
   @override
@@ -23,7 +25,6 @@ class BarcodeScannerWidget extends StatefulWidget {
 
 class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
     with SingleTickerProviderStateMixin {
-  final MobileScannerController controller = MobileScannerController();
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   String? _lastCode;
@@ -47,7 +48,6 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
   @override
   void dispose() {
     _fadeController.dispose();
-    controller.dispose();
     super.dispose();
   }
 
@@ -141,7 +141,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
       children: [
         // Full screen scanner
         MobileScanner(
-          controller: controller,
+          controller: widget.controller, // Use passed controller
           onDetect: (capture) {
             final List<Barcode> barcodes = capture.barcodes;
             for (final barcode in barcodes) {
@@ -178,26 +178,14 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
                   ),
                 ),
               ),
-              // Flash button
-              Positioned(
-                right: -3,
-                top: size.height * 0.2,
-                child: Container(
-                  height: 50,
-                  width: 50,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.5),
-                    shape: BoxShape.circle,
-                  ),
-                  child: FlashToggleButtonWidget(controller: controller),
-                ),
-              ),
             ],
           ),
         ),
-        // Result Card
-        Align(
-          alignment: Alignment.bottomCenter,
+        // Result Card - Modified positioning
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
           child: AnimatedBuilder(
             animation: _fadeAnimation,
             builder: (context, child) {
@@ -210,7 +198,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
                   ).animate(_fadeAnimation),
                   child: Container(
                     constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * 0.3,
+                      maxHeight: MediaQuery.of(context).size.height * 0.25,
                     ),
                     width: double.infinity,
                     decoration: BoxDecoration(
