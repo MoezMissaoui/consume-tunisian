@@ -16,8 +16,10 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
     super.initState();
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
-        statusBarColor: Colors.white,
-        statusBarIconBrightness: Brightness.dark,
+        statusBarColor: Colors.transparent,
+        systemNavigationBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarIconBrightness: Brightness.light,
       ),
     );
   }
@@ -26,59 +28,93 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
     setState(() {});
   }
 
+  void _onMenuItemSelected(String value) {
+    switch (value) {
+      case 'history':
+        // TODO: Navigate to history page
+        break;
+      case 'favorites':
+        // TODO: Navigate to favorites page
+        break;
+      case 'settings':
+        // TODO: Navigate to settings page
+        break;
+      case 'about':
+        // TODO: Navigate to about page
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final scannerHeight = screenHeight * 0.6;
-
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.black,
+      extendBodyBehindAppBar: true,
+      extendBody: true,
       appBar: AppBar(
-        systemOverlayStyle: const SystemUiOverlayStyle(
-          statusBarColor: Colors.white,
-          statusBarIconBrightness: Brightness.dark,
-        ),
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        backgroundColor: Colors.white,
-        title: const Text(
-          AppConfig.APP_TITLE,
-          style: TextStyle(color: Colors.black),
-        ),
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Text(
-              AppConfig.SCAN_INSTRUCTION,
-              style: const TextStyle(fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            Container(
-              height: scannerHeight,
+        actions: [
+          PopupMenuButton<String>(
+            icon: Container(
+              height: 56,
+              width: 56,
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: const Offset(0, 3),
+                color: Colors.white.withOpacity(0.5),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.more_horiz, color: Colors.white),
+            ),
+            onSelected: _onMenuItemSelected,
+            itemBuilder:
+                (BuildContext context) => [
+                  const PopupMenuItem(
+                    value: 'history',
+                    child: Row(
+                      children: [
+                        Icon(Icons.history, size: 20),
+                        SizedBox(width: 8),
+                        Text('Historique'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'favorites',
+                    child: Row(
+                      children: [
+                        Icon(Icons.favorite, size: 20),
+                        SizedBox(width: 8),
+                        Text('Favoris'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'settings',
+                    child: Row(
+                      children: [
+                        Icon(Icons.settings, size: 20),
+                        SizedBox(width: 8),
+                        Text('Paramètres'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'about',
+                    child: Row(
+                      children: [
+                        Icon(Icons.info, size: 20),
+                        SizedBox(width: 8),
+                        Text('À propos'),
+                      ],
+                    ),
                   ),
                 ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: BarcodeScannerWidget(
-                  onBarcodeDetected: _onBarcodeScanned,
-                  bracketColor: AppConfig.COLOR_DEFAULT,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
+      ),
+      body: BarcodeScannerWidget(
+        onBarcodeDetected: _onBarcodeScanned,
+        bracketColor: AppConfig.COLOR_DEFAULT,
       ),
     );
   }
