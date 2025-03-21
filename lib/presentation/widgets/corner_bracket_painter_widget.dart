@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class CornerBracketPainter extends CustomPainter {
+class CornerBracketPainterWidget extends CustomPainter {
   final Color color;
 
-  CornerBracketPainter({required this.color});
+  CornerBracketPainterWidget({required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -14,7 +14,7 @@ class CornerBracketPainter extends CustomPainter {
           ..style = PaintingStyle.stroke;
 
     const double bracketLength = 20;
-    const double cornerRadius = 8;
+    const double cornerRadius = 0;
 
     // Top-left corner
     canvas.drawArc(

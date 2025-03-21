@@ -1,72 +1,178 @@
-import 'package:consume_tunisian/config/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'flash_toggle_button.dart';
-import 'corner_bracket_painter.dart';
+import 'package:flutter/services.dart';
+import '../../config/barcode_countries.dart';
+import 'flash_toggle_button_widget.dart';
+import 'corner_bracket_painter_widget.dart';
 
-typedef BarcodeCallback = void Function(String barcode);
+typedef BarcodeCallback = void Function(String code, String format);
 
 class BarcodeScannerWidget extends StatefulWidget {
   final BarcodeCallback onBarcodeDetected;
   final Color bracketColor;
 
   const BarcodeScannerWidget({
-    Key? key,
+    super.key,
     required this.onBarcodeDetected,
     required this.bracketColor,
-  }) : super(key: key);
+  });
 
   @override
-  _BarcodeScannerWidgetState createState() => _BarcodeScannerWidgetState();
+  State<BarcodeScannerWidget> createState() => _BarcodeScannerWidgetState();
 }
 
 class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget> {
-  final MobileScannerController _controller = MobileScannerController();
-  late Color _currentBracketColor;
+  final MobileScannerController controller = MobileScannerController();
+  String? _lastCode;
+  String? _lastFormat;
+  String? _lastCountry;
 
   @override
-  void initState() {
-    super.initState();
-    _currentBracketColor = widget.bracketColor;
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
-  @override
-  void didUpdateWidget(BarcodeScannerWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.bracketColor != widget.bracketColor) {
-      setState(() {
-        _currentBracketColor = widget.bracketColor;
-      });
-    }
+  bool _isBarcodeFormat(BarcodeFormat format) {
+    return format == BarcodeFormat.ean8 ||
+        format == BarcodeFormat.ean13 ||
+        format == BarcodeFormat.upcA ||
+        format == BarcodeFormat.code128 ||
+        format == BarcodeFormat.codebar ||
+        format == BarcodeFormat.code39 ||
+        format == BarcodeFormat.code93 ||
+        format == BarcodeFormat.dataMatrix ||
+        format == BarcodeFormat.itf ||
+        format == BarcodeFormat.pdf417 ||
+        format == BarcodeFormat.aztec ||
+        format == BarcodeFormat.upcE;
   }
 
-  void _onBarcodeDetected(BarcodeCapture capture) {
-    final barcodes = capture.barcodes;
-    for (final barcode in barcodes) {
-      if (barcode.rawValue != null) {
-        widget.onBarcodeDetected(barcode.rawValue!);
-        break;
-      }
-    }
+  void _copyToClipboard(String text) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Code copié dans le presse-papiers'),
+        duration: Duration(seconds: 1),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        MobileScanner(controller: _controller, onDetect: _onBarcodeDetected),
-        Positioned(
-          top: -5,
-          right: -10,
-          child: FlashToggleButton(controller: _controller),
+        MobileScanner(
+          controller: controller,
+          onDetect: (capture) {
+            final List<Barcode> barcodes = capture.barcodes;
+            for (final barcode in barcodes) {
+              if (_isBarcodeFormat(barcode.format)) {
+                final code = barcode.rawValue ?? '';
+                final format = barcode.format.name;
+                setState(() {
+                  _lastCode = code;
+                  _lastFormat = format;
+                  _lastCountry = getCountryFromBarcode(code);
+                });
+                widget.onBarcodeDetected(code, format);
+              }
+            }
+          },
         ),
-        Center(
-          child: Container(
-            width: 230,
-            height: 90,
-            child: CustomPaint(
-              painter: CornerBracketPainter(color: _currentBracketColor),
-            ),
+        Container(
+          decoration: BoxDecoration(color: Colors.black.withOpacity(0.5)),
+          child: Stack(
+            children: [
+              Center(
+                child: Container(
+                  width: 270,
+                  height: 270,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white.withOpacity(0.3)),
+                    borderRadius: BorderRadius.circular(0),
+                  ),
+                  child: CustomPaint(
+                    painter: CornerBracketPainterWidget(
+                      color: widget.bracketColor,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 16,
+                right: 16,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  child: FlashToggleButtonWidget(controller: controller),
+                ),
+              ),
+              if (_lastCode != null)
+                Positioned(
+                  left: 20,
+                  right: 20,
+                  bottom: 20,
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                _lastCode!,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.copy),
+                              onPressed: () => _copyToClipboard(_lastCode!),
+                              iconSize: 20,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            if (_lastFormat != null)
+                              Chip(
+                                label: Text(_lastFormat!),
+                                backgroundColor: Colors.blue.withOpacity(0.1),
+                                labelStyle: TextStyle(color: Colors.blue[700]),
+                              ),
+                            if (_lastCountry != null) ...[
+                              const SizedBox(width: 8),
+                              Chip(
+                                label: Text(_lastCountry!),
+                                backgroundColor: Colors.green.withOpacity(0.1),
+                                labelStyle: TextStyle(color: Colors.green[700]),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
       ],

@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-class FlashToggleButton extends StatefulWidget {
+class FlashToggleButtonWidget extends StatefulWidget {
   final MobileScannerController controller;
 
-  const FlashToggleButton({Key? key, required this.controller})
-    : super(key: key);
+  const FlashToggleButtonWidget({super.key, required this.controller});
 
   @override
-  _FlashToggleButtonState createState() => _FlashToggleButtonState();
+  _FlashToggleButtonWidgetState createState() =>
+      _FlashToggleButtonWidgetState();
 }
 
-class _FlashToggleButtonState extends State<FlashToggleButton> {
+class _FlashToggleButtonWidgetState extends State<FlashToggleButtonWidget> {
   bool _isFlashOn = false;
 
   void _toggleFlash() {
