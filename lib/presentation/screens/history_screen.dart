@@ -6,6 +6,8 @@ import '../../domain/models/scan_history.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import '../../config/app_config.dart';
+import '../../data/api/product_api.dart';
+import '../screens/product_details_screen.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({Key? key}) : super(key: key);
@@ -14,14 +16,38 @@ class HistoryScreen extends StatefulWidget {
   State<HistoryScreen> createState() => _HistoryScreenState();
 }
 
-class _HistoryScreenState extends State<HistoryScreen> {
+class _HistoryScreenState extends State<HistoryScreen>
+    with SingleTickerProviderStateMixin {
   final HistoryManager _historyManager = HistoryManager();
   List<ScanHistory> _history = [];
+  late AnimationController _animationController;
+  late LanguageController _languageController;
+  bool _isDisposed = false;
 
   @override
   void initState() {
     super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
     _loadHistory();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _languageController = Provider.of<LanguageController>(
+      context,
+      listen: false,
+    );
+  }
+
+  @override
+  void dispose() {
+    _isDisposed = true;
+    _animationController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadHistory() async {
@@ -47,17 +73,117 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return country.contains(AppConfig.USER_COUNTRY) ? Colors.green : Colors.red;
   }
 
+  Future<void> _handleLookupProduct(ScanHistory item) async {
+    Navigator.pop(context);
+    try {
+      final product = await ProductApi.getProduct(item.code);
+      if (_isDisposed) return;
+
+      if (product != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => ProductDetailsScreen(
+                  product: product,
+                  countryName: item.country,
+                  barcodeType: item.format,
+                ),
+          ),
+        );
+      } else {
+        _showError('noDetails', Colors.orange);
+      }
+    } catch (e) {
+      if (!_isDisposed) {
+        _showError('error', Colors.red);
+      }
+    }
+  }
+
+  void _showError(String key, Color color) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(_languageController.translate(key)),
+        backgroundColor: color,
+      ),
+    );
+  }
+
+  Future<void> _showDetailsBottomSheet(BuildContext context, ScanHistory item) {
+    return showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder:
+          (context) => Container(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _languageController.translate('productDetails'),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.search),
+                  label: Text(_languageController.translate('lookupProduct')),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.purple,
+                    foregroundColor: Colors.white,
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  onPressed: () => _handleLookupProduct(item),
+                ),
+              ],
+            ),
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageController>(context);
     return Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text(lang.translate('history')),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(lang.translate('history')),
+            Text(
+              '${_history.length} ${lang.translate("scannedItems")}',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
         actions: [
           if (_history.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.delete_sweep),
               onPressed: () => _showClearHistoryDialog(context, lang),
+              tooltip: lang.translate('clearHistory'),
             ),
         ],
       ),
@@ -67,127 +193,38 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.history, size: 64, color: Colors.grey[400]),
+                    const Icon(Icons.history, size: 80, color: Colors.grey),
                     const SizedBox(height: 16),
                     Text(
                       lang.translate('noHistory'),
-                      style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                      style: const TextStyle(fontSize: 18, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      lang.translate('startScanning'),
+                      style: const TextStyle(fontSize: 14, color: Colors.grey),
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               )
-              : ListView.builder(
-                itemCount: _history.length,
-                itemBuilder: (context, index) {
+              : AnimatedList(
+                initialItemCount: _history.length,
+                itemBuilder: (context, index, animation) {
                   final item = _history[index];
-                  return Container(
-                    margin: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.8),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 20,
-                          spreadRadius: 5,
-                        ),
-                      ],
+                  return SlideTransition(
+                    position: animation.drive(
+                      Tween(
+                        begin: const Offset(1, 0),
+                        end: Offset.zero,
+                      ).chain(CurveTween(curve: Curves.easeOutCubic)),
                     ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Content area
-                        Padding(
-                          padding: const EdgeInsets.all(20),
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      item.code,
-                                      style: const TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.bold,
-                                        letterSpacing: 1,
-                                      ),
-                                    ),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.copy, size: 18),
-                                    onPressed:
-                                        () => _copyToClipboard(item.code),
-                                  ),
-                                  IconButton(
-                                    icon: Icon(
-                                      Icons.delete_outline,
-                                      color: Colors.red[300],
-                                    ),
-                                    onPressed:
-                                        () => _showDeleteDialog(
-                                          context,
-                                          lang,
-                                          item.code,
-                                        ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Row(
-                                  children: [
-                                    _buildModernChip(
-                                      item.format,
-                                      Icons.qr_code_2,
-                                      Colors.blue,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    _buildModernChip(
-                                      item.country,
-                                      Icons.location_on,
-                                      _getCountryColor(item.country),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        // Date row at bottom
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 12,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.purple.withOpacity(0.1),
-                            borderRadius: const BorderRadius.vertical(
-                              bottom: Radius.circular(20),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.access_time,
-                                color: Colors.purple[700],
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                DateFormat(
-                                  'dd/MM/yyyy HH:mm',
-                                ).format(item.scanDate),
-                                style: TextStyle(
-                                  color: Colors.purple[700],
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      child: _buildHistoryCard(item, lang),
                     ),
                   );
                 },
@@ -195,7 +232,147 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget _buildModernChip(String label, IconData icon, MaterialColor color) {
+  Widget _buildHistoryCard(ScanHistory item, LanguageController lang) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _showDetailsBottomSheet(context, item),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              item.code,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          _buildIconButton(
+                            Icons.copy_rounded,
+                            () => _copyToClipboard(item.code),
+                            Colors.blue,
+                          ),
+                          _buildIconButton(
+                            Icons.delete_outline_rounded,
+                            () => _showDeleteDialog(context, lang, item.code),
+                            Colors.red,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _buildChip(
+                              item.format,
+                              Icons.qr_code_2,
+                              Colors.blue,
+                            ),
+                            const SizedBox(width: 8),
+                            _buildChip(
+                              item.country,
+                              Icons.location_on,
+                              _getCountryColor(item.country),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    border: Border(top: BorderSide(color: Colors.grey[200]!)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.access_time,
+                            size: 16,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            DateFormat(
+                              'dd/MM/yyyy HH:mm',
+                            ).format(item.scanDate),
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        lang.translate('tapForDetails'),
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIconButton(
+    IconData icon,
+    VoidCallback onPressed,
+    MaterialColor color,
+  ) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20),
+        onTap: onPressed,
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Icon(icon, color: color[400], size: 20),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChip(String label, IconData icon, MaterialColor color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(

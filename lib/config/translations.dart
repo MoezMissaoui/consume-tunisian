@@ -69,6 +69,13 @@ class AppTranslations {
       'clearHistoryConfirm':
           'Voulez-vous vraiment effacer tout l\'historique ?',
       'clear': 'Effacer',
+      'loading': 'Chargement...',
+      'scannedItems': 'produits scannés',
+      'startScanning':
+          'Commencez à scanner des produits\npour voir leur historique ici',
+      'tapForDetails': 'Appuyez pour plus de détails',
+      'productDetails': 'Détails du produit',
+      'lookupProduct': 'Rechercher le produit',
     },
     'en': {
       'appTitle': 'Consume Tunisian',
@@ -136,6 +143,12 @@ class AppTranslations {
       'clearHistory': 'Clear history',
       'clearHistoryConfirm': 'Do you really want to clear all history?',
       'clear': 'Clear',
+      'loading': 'Loading...',
+      'scannedItems': 'scanned items',
+      'startScanning': 'Start scanning products\nto see their history here',
+      'tapForDetails': 'Tap for more details',
+      'productDetails': 'Product Details',
+      'lookupProduct': 'Look up product',
     },
     'ar': {
       'appTitle': 'استهلك تونسي',
@@ -201,6 +214,12 @@ class AppTranslations {
       'clearHistory': 'مسح السجل',
       'clearHistoryConfirm': 'هل تريد حقًا مسح كل السجل؟',
       'clear': 'مسح',
+      'loading': 'جاري التحميل...',
+      'scannedItems': 'منتجات تم مسحها',
+      'startScanning': 'ابدأ بمسح المنتجات\nلرؤية سجلها هنا',
+      'tapForDetails': 'اضغط لمزيد من التفاصيل',
+      'productDetails': 'تفاصيل المنتج',
+      'lookupProduct': 'البحث عن المنتج',
     },
   };
 }

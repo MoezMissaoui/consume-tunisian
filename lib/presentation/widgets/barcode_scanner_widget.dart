@@ -8,6 +8,8 @@ import 'flash_toggle_button_widget.dart';
 import 'corner_bracket_painter_widget.dart';
 import '../../config/app_config.dart';
 import '../../controllers/language_controller.dart';
+import '../../data/api/product_api.dart';
+import '../screens/product_details_screen.dart';
 
 typedef BarcodeCallback = void Function(String code, String format);
 
@@ -36,6 +38,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
   String? _lastCountry;
   bool _isCardVisible = false;
   final DragStartBehavior dragStartBehavior = DragStartBehavior.down;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -96,6 +99,51 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
         _lastCountry = null;
       });
     });
+  }
+
+  Future<void> _checkProductDetails(
+    BuildContext context,
+    String code,
+    String? country,
+  ) async {
+    setState(() => _isLoading = true);
+
+    final lang = Provider.of<LanguageController>(context, listen: false);
+    try {
+      final product = await ProductApi.getProduct(code);
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+
+      if (product != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => ProductDetailsScreen(
+                  product: product,
+                  countryName: country ?? 'Unknown',
+                  barcodeType: _lastFormat ?? '',
+                ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(lang.translate('noDetails')),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(lang.translate('error')),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   Widget _buildCodeRow(String code) {
@@ -265,7 +313,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
         Positioned(
           left: 0,
           right: 0,
-          bottom: 0,
+          bottom: 50,
           child: AnimatedBuilder(
             animation: _fadeAnimation,
             builder: (context, child) {
@@ -352,14 +400,14 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
                                   Row(
                                     children: [
                                       if (_lastFormat != null)
-                                        _buildModernChip(
+                                        _buildChip(
                                           _lastFormat!,
                                           Icons.qr_code_2,
                                           Colors.blue,
                                         ),
                                       const SizedBox(width: 8),
                                       if (_lastCountry != null)
-                                        _buildModernChip(
+                                        _buildChip(
                                           _lastCountry!,
                                           Icons.location_on,
                                           _lastCountry!.contains(
@@ -386,19 +434,65 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
                                 bottom: Radius.circular(20),
                               ),
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.search, color: Colors.purple[700]),
-                                const SizedBox(width: 8),
-                                Text(
-                                  lang.translate('seeDetails'),
-                                  style: TextStyle(
-                                    color: Colors.purple[700],
-                                    fontWeight: FontWeight.bold,
+                            child: InkWell(
+                              onTap:
+                                  _lastCode != null && !_isLoading
+                                      ? () => _checkProductDetails(
+                                        context,
+                                        _lastCode!,
+                                        _lastCountry,
+                                      )
+                                      : null,
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 12,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.purple.withOpacity(0.1),
+                                  borderRadius: const BorderRadius.vertical(
+                                    bottom: Radius.circular(20),
                                   ),
                                 ),
-                              ],
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    if (_isLoading)
+                                      SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor:
+                                              AlwaysStoppedAnimation<Color>(
+                                                Colors.purple[700] ??
+                                                    Colors.purple,
+                                              ),
+                                        ),
+                                      )
+                                    else
+                                      Icon(
+                                        Icons.search,
+                                        color: Colors.purple[700]?.withOpacity(
+                                          _lastCode != null ? 1.0 : 0.5,
+                                        ),
+                                      ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      _isLoading
+                                          ? lang.translate('loading')
+                                          : lang.translate('seeDetails'),
+                                      style: TextStyle(
+                                        color: Colors.purple[700]?.withOpacity(
+                                          _lastCode != null ? 1.0 : 0.5,
+                                        ),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -414,7 +508,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
     );
   }
 
-  Widget _buildModernChip(String label, IconData icon, MaterialColor color) {
+  Widget _buildChip(String label, IconData icon, MaterialColor color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
