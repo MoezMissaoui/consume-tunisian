@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:provider/provider.dart';
 import '../widgets/barcode_scanner_widget.dart';
 import '../../config/app_config.dart';
 import '../widgets/flash_toggle_button_widget.dart';
 import '../screens/about_screen.dart';
 import '../screens/settings_screen.dart';
+import '../../controllers/language_controller.dart';
 
 class BarcodeScannerScreen extends StatefulWidget {
   const BarcodeScannerScreen({super.key});
@@ -115,6 +117,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final lang = Provider.of<LanguageController>(context);
     return Scaffold(
       backgroundColor: Colors.black,
       extendBodyBehindAppBar: true,
@@ -185,41 +188,32 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
               onSelected: _onMenuItemSelected,
               itemBuilder:
                   (BuildContext context) => [
-                    // const PopupMenuItem(
-                    //   value: 'history',
-                    //   child: Row(
-                    //     children: [
-                    //       Icon(Icons.history, size: 20, color: Colors.white),
-                    //       SizedBox(width: 8),
-                    //       Text(
-                    //         'Historique',
-                    //         style: TextStyle(color: Colors.white),
-                    //       ),
-                    //     ],
-                    //   ),
-                    // ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'settings',
                       child: Row(
                         children: [
-                          Icon(Icons.settings, size: 20, color: Colors.white),
-                          SizedBox(width: 8),
+                          const Icon(
+                            Icons.settings,
+                            size: 20,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 8),
                           Text(
-                            'Paramètres',
-                            style: TextStyle(color: Colors.white),
+                            lang.translate('settings'),
+                            style: const TextStyle(color: Colors.white),
                           ),
                         ],
                       ),
                     ),
-                    const PopupMenuItem(
+                    PopupMenuItem(
                       value: 'about',
                       child: Row(
                         children: [
-                          Icon(Icons.info, size: 20, color: Colors.white),
-                          SizedBox(width: 8),
+                          const Icon(Icons.info, size: 20, color: Colors.white),
+                          const SizedBox(width: 8),
                           Text(
-                            'À propos',
-                            style: TextStyle(color: Colors.white),
+                            lang.translate('about'),
+                            style: const TextStyle(color: Colors.white),
                           ),
                         ],
                       ),

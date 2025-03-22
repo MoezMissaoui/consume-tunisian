@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/gestures.dart';
+import 'package:provider/provider.dart';
 import '../../config/barcode_countries.dart';
 import 'flash_toggle_button_widget.dart';
 import 'corner_bracket_painter_widget.dart';
 import '../../config/app_config.dart';
+import '../../controllers/language_controller.dart';
 
 typedef BarcodeCallback = void Function(String code, String format);
 
@@ -71,12 +73,13 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
 
   void _copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   const SnackBar(
-    //     content: Text('Code copié dans le presse-papiers'),
-    //     duration: Duration(seconds: 1),
-    //   ),
-    // );
+    final lang = Provider.of<LanguageController>(context, listen: false);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(lang.translate('copied')),
+        duration: const Duration(seconds: 1),
+      ),
+    );
   }
 
   void _onBarcodeDetected(String code, String format, String? country) {
@@ -137,6 +140,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
 
   @override
   Widget build(BuildContext context) {
+    final lang = Provider.of<LanguageController>(context);
     final size = MediaQuery.of(context).size;
     final scanArea = size.width * 0.8; // 80% of screen width
 
@@ -186,7 +190,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        AppConfig.APP_TITLE,
+                        lang.translate('appTitle'),
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 24,
@@ -220,7 +224,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                "Instructions",
+                                lang.translate('instructions'),
                                 style: TextStyle(
                                   color: Colors.white.withOpacity(0.8),
                                   fontWeight: FontWeight.bold,
@@ -230,7 +234,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            "Placez le code-barres au centre du cadre pour un meilleur résultat",
+                            lang.translate('scanInstructions'),
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: Colors.white.withOpacity(0.7),
@@ -395,7 +399,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
                                 Icon(Icons.search, color: Colors.purple[700]),
                                 const SizedBox(width: 8),
                                 Text(
-                                  'Voir les détails',
+                                  lang.translate('seeDetails'),
                                   style: TextStyle(
                                     color: Colors.purple[700],
                                     fontWeight: FontWeight.bold,

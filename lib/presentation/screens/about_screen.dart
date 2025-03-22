@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:consume_tunisian/controllers/language_controller.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final lang = Provider.of<LanguageController>(context);
     return WillPopScope(
       onWillPop: () async {
         Navigator.of(context).pop();
@@ -12,7 +15,7 @@ class AboutScreen extends StatelessWidget {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('À propos'),
+          title: Text(lang.translate('about')),
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
@@ -27,23 +30,31 @@ class AboutScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Card(
+                Card(
                   child: Padding(
-                    padding: EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(16.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Consommer Tunisien',
-                          style: TextStyle(
+                          lang.translate('appTitle'),
+                          style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         Text(
-                          'Cette application vous permet de vérifier si un produit est fabriqué en Tunisie en scannant son code-barres.',
-                          style: TextStyle(fontSize: 16),
+                          lang.translate('appDescription'),
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          '${lang.translate('version')} 1.0.0',
+                          style: const TextStyle(
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey,
+                          ),
                         ),
                       ],
                     ),
@@ -56,9 +67,9 @@ class AboutScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Comment ça marche ?',
-                          style: TextStyle(
+                        Text(
+                          lang.translate('howItWorks'),
+                          style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                           ),
@@ -69,30 +80,24 @@ class AboutScreen extends StatelessWidget {
                             Icons.qr_code_scanner,
                             color: Theme.of(context).primaryColor,
                           ),
-                          title: const Text('Scannez un code-barres'),
-                          subtitle: const Text(
-                            'Utilisez la caméra pour scanner le code-barres d\'un produit',
-                          ),
+                          title: Text(lang.translate('scanBarcode')),
+                          subtitle: Text(lang.translate('useCamera')),
                         ),
                         ListTile(
                           leading: Icon(
                             Icons.check_circle,
                             color: Theme.of(context).primaryColor,
                           ),
-                          title: const Text('Vérification'),
-                          subtitle: const Text(
-                            'L\'application vérifie si le produit est fabriqué en Tunisie',
-                          ),
+                          title: Text(lang.translate('verification')),
+                          subtitle: Text(lang.translate('verifyProduct')),
                         ),
                         ListTile(
                           leading: Icon(
                             Icons.info,
                             color: Theme.of(context).primaryColor,
                           ),
-                          title: const Text('Informations'),
-                          subtitle: const Text(
-                            'Consultez les détails du produit si disponibles',
-                          ),
+                          title: Text(lang.translate('information')),
+                          subtitle: Text(lang.translate('viewDetails')),
                         ),
                       ],
                     ),

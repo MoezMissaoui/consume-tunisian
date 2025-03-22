@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../controllers/language_controller.dart';
 
 class NutriscoreTooltipWidget extends StatelessWidget {
   const NutriscoreTooltipWidget({Key? key}) : super(key: key);
 
   static void show(BuildContext context) {
+    final lang = Provider.of<LanguageController>(context, listen: false);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -28,9 +31,9 @@ class NutriscoreTooltipWidget extends StatelessWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text(
-                              'Nutri-Score',
-                              style: TextStyle(
+                            Text(
+                              lang.translate('nutriScore'),
+                              style: const TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -42,17 +45,17 @@ class NutriscoreTooltipWidget extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 16),
-                        const Text(
-                          "À quoi sert le Nutri-Score ?",
-                          style: TextStyle(
+                        Text(
+                          lang.translate('nutriScoreQuestion'),
+                          style: const TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         const SizedBox(height: 12),
-                        const Text(
-                          "Voici une définition du Nutri-Score. Il offre aux consommateurs une information claire et aisément compréhensible sur la qualité nutritionnelle globale d'un produit, directement sur l'emballage, facilitant ainsi les choix lors des achats. Cette étiquette permet de comparer aisément les aliments et d'opter pour ceux ayant une meilleure valeur nutritionnelle.\n\nCe repère visuel s'inspire des travaux de l'équipe du Pr Serge Hercberg. Le logo utilise une gamme de cinq couleurs, allant du vert foncé au orange foncé, et est associé à des lettres de A (indiquant la \"meilleure qualité nutritionnelle\") à E (représentant la \"qualité nutritionnelle la moins bonne\").",
-                          style: TextStyle(fontSize: 14, height: 1.5),
+                        Text(
+                          lang.translate('nutriScoreExplanation'),
+                          style: const TextStyle(fontSize: 14, height: 1.5),
                         ),
                       ],
                     ),
