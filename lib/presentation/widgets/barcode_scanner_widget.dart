@@ -161,6 +161,33 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
           color: Colors.black.withOpacity(0.5),
           child: Stack(
             children: [
+              // Add title above scanner window
+              Positioned(
+                top: size.height * 0.17, // Position above scanner window
+                left: 0,
+                right: 0,
+                child: Column(
+                  children: [
+                    Text(
+                      AppConfig.APP_TITLE,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.5),
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1.2,
+                        shadows: [
+                          Shadow(
+                            offset: const Offset(0, 2),
+                            blurRadius: 4,
+                            color: Colors.black.withOpacity(0.3),
+                          ),
+                        ],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
               // Scanner window overlay
               Positioned(
                 top: size.height * 0.3,
