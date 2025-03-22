@@ -115,48 +115,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               onChanged: (bool value) => _toggleNotifications(),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                    Card(
-                      child: Column(
-                        children: [
-                          ListTile(
-                            leading: const Icon(Icons.camera_alt),
-                            title: Text(
-                              languageController.translate('scanner'),
-                            ),
-                            subtitle: Text(
-                              languageController.translate('scannerSettings'),
-                            ),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () {
-                              // TODO: Scanner settings
-                            },
-                          ),
                           const Divider(),
-                          ListTile(
-                            leading: const Icon(Icons.notifications),
-                            title: Text(
-                              languageController.translate('notifications'),
-                            ),
-                            subtitle: Text(
-                              languageController.translate(
-                                'notificationsSettings',
-                              ),
-                            ),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () {
-                              // TODO: Notification settings
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Card(
-                      child: Column(
-                        children: [
                           ListTile(
                             leading: const Icon(Icons.storage),
                             title: Text(
