@@ -4,9 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
+import 'package:provider/provider.dart';
 import '../../domain/models/product.dart';
 import '../../config/app_config.dart';
 import '../widgets/nutriscore_tooltip_widget.dart';
+import '../../controllers/language_controller.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
   final Product product;
@@ -171,10 +173,10 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             viewportFraction: 1.0,
             onPageChanged:
                 (index, _) => setState(() => _currentImageIndex = index),
-            autoPlay: allImages.length > 1, // Auto play if multiple images
-            autoPlayInterval: const Duration(seconds: 4),
-            autoPlayAnimationDuration: const Duration(milliseconds: 800),
-            autoPlayCurve: Curves.fastOutSlowIn,
+            // autoPlay: allImages.length > 1, // Auto play if multiple images
+            // autoPlayInterval: const Duration(seconds: 4),
+            // autoPlayAnimationDuration: const Duration(milliseconds: 800),
+            // autoPlayCurve: Curves.fastOutSlowIn,
           ),
           items: allImages.map((url) => _buildImageItem(url)).toList(),
         ),
@@ -252,6 +254,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   Widget _buildProductHeader() {
+    final lang = Provider.of<LanguageController>(context);
     return Container(
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -364,8 +367,8 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     children: [
                       Text(
                         widget.countryName.contains(AppConfig.USER_COUNTRY)
-                            ? 'Produit Local'
-                            : 'Produit Importé',
+                            ? lang.translate('localProduct')
+                            : lang.translate('importedProduct'),
                         style: TextStyle(
                           color:
                               widget.countryName.contains(
@@ -442,6 +445,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   Widget _buildAllergensSection() {
+    final lang = Provider.of<LanguageController>(context);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -473,7 +477,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 Icon(Icons.warning_amber_rounded, color: Colors.red[700]),
                 const SizedBox(width: 8),
                 Text(
-                  'Allergènes',
+                  lang.translate('allergens'),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -517,6 +521,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   Widget _buildIngredientsSection() {
+    final lang = Provider.of<LanguageController>(context);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -540,7 +545,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                 const Icon(Icons.restaurant_menu, size: 24),
                 const SizedBox(width: 8),
                 Text(
-                  'Ingrédients',
+                  lang.translate('ingredients'),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
