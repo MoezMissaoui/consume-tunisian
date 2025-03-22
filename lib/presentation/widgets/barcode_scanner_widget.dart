@@ -240,14 +240,6 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
                                   letterSpacing: 1,
                                 ),
                               ),
-                              if (_lastFormat != null)
-                                Text(
-                                  _lastFormat!,
-                                  style: TextStyle(
-                                    color: Colors.grey[600],
-                                    fontSize: 14,
-                                  ),
-                                ),
                             ],
                           ),
                         ),
