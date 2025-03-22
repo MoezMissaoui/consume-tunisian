@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/services.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:photo_view/photo_view.dart';
+import 'package:photo_view/photo_view_gallery.dart';
 import '../../domain/models/product.dart';
 import '../../config/app_config.dart';
 import '../widgets/nutriscore_tooltip_widget.dart';
@@ -38,6 +40,21 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
       SnackBar(
         content: Text(AppConfig.COPIED_MESSAGE),
         duration: const Duration(seconds: 1),
+      ),
+    );
+  }
+
+  void _openImageGallery(
+    BuildContext context,
+    List<String> images,
+    int initialIndex,
+  ) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (context) =>
+                GalleryScreen(images: images, initialIndex: initialIndex),
       ),
     );
   }
@@ -208,30 +225,40 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   Widget _buildImageItem(String url) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        Image.network(
-          url,
-          fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => const Icon(Icons.error),
-        ),
-        DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Colors.black.withOpacity(0.7),
-                Colors.transparent,
-                Colors.transparent,
-                Colors.black.withOpacity(0.7),
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              stops: const [0.0, 0.2, 0.8, 1.0],
+    return GestureDetector(
+      onTap: () {
+        final List<String> allImages = [
+          ...(widget.product.allImages['front'] ?? []).cast<String>(),
+          ...(widget.product.allImages['ingredients'] ?? []).cast<String>(),
+          ...(widget.product.allImages['nutrition'] ?? []).cast<String>(),
+        ];
+        _openImageGallery(context, allImages, _currentImageIndex);
+      },
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.network(
+            url,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => const Icon(Icons.error),
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Colors.black.withOpacity(0.7),
+                  Colors.transparent,
+                  Colors.transparent,
+                  Colors.black.withOpacity(0.7),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: const [0.0, 0.2, 0.8, 1.0],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -426,6 +453,90 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               icon: const Icon(Icons.copy, size: 20),
               onPressed: () => _copyToClipboard(value),
               tooltip: AppConfig.COPY_TOOLTIP,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class GalleryScreen extends StatefulWidget {
+  final List<String> images;
+  final int initialIndex;
+
+  const GalleryScreen({
+    Key? key,
+    required this.images,
+    required this.initialIndex,
+  }) : super(key: key);
+
+  @override
+  State<GalleryScreen> createState() => _GalleryScreenState();
+}
+
+class _GalleryScreenState extends State<GalleryScreen> {
+  late int currentIndex;
+  late PageController pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    currentIndex = widget.initialIndex;
+    pageController = PageController(initialPage: widget.initialIndex);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
+        children: [
+          PhotoViewGallery.builder(
+            pageController: pageController,
+            itemCount: widget.images.length,
+            builder: (context, index) {
+              return PhotoViewGalleryPageOptions(
+                imageProvider: NetworkImage(widget.images[index]),
+                minScale: PhotoViewComputedScale.contained,
+                maxScale: PhotoViewComputedScale.covered * 2,
+              );
+            },
+            onPageChanged: (index) {
+              setState(() {
+                currentIndex = index;
+              });
+            },
+            scrollPhysics: const BouncingScrollPhysics(),
+            backgroundDecoration: const BoxDecoration(color: Colors.black),
+          ),
+          // Close button
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 10,
+            right: 10,
+            child: IconButton(
+              icon: const Icon(Icons.close, color: Colors.white, size: 30),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          // Image counter
+          if (widget.images.length > 1)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 10,
+              left: 10,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  '${currentIndex + 1}/${widget.images.length}',
+                  style: const TextStyle(color: Colors.white),
+                ),
+              ),
             ),
         ],
       ),
