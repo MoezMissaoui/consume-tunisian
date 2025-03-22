@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/gestures.dart';
 import '../../config/barcode_countries.dart';
 import 'flash_toggle_button_widget.dart';
 import 'corner_bracket_painter_widget.dart';
@@ -32,17 +33,18 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
   String? _lastFormat;
   String? _lastCountry;
   bool _isCardVisible = false;
+  final DragStartBehavior dragStartBehavior = DragStartBehavior.down;
 
   @override
   void initState() {
     super.initState();
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1),
+      duration: const Duration(milliseconds: 400), // Increased duration
     );
     _fadeAnimation = CurvedAnimation(
       parent: _fadeController,
-      curve: Curves.easeInOut,
+      curve: Curves.easeOutCubic, // Smoother curve
     );
   }
 
@@ -161,36 +163,89 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
           color: Colors.black.withOpacity(0.5),
           child: Stack(
             children: [
-              // Add title above scanner window
+              // Enhanced title and instructions above scanner window
               Positioned(
-                top: size.height * 0.17, // Position above scanner window
+                top: size.height * 0.12,
                 left: 0,
                 right: 0,
                 child: Column(
                   children: [
-                    Text(
-                      AppConfig.APP_TITLE,
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.5),
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                        shadows: [
-                          Shadow(
-                            offset: const Offset(0, 2),
-                            blurRadius: 4,
-                            color: Colors.black.withOpacity(0.3),
+                    // App Title
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.purple.withOpacity(0.8),
+                            Colors.blue.withOpacity(0.8),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        AppConfig.APP_TITLE,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // Scanning Instructions
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 40),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.qr_code_scanner,
+                                color: Colors.white.withOpacity(0.8),
+                                size: 20,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                "Instructions",
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.8),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Placez le code-barres au centre du cadre pour un meilleur résultat",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.7),
+                              fontSize: 12,
+                            ),
                           ),
                         ],
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),
               ),
               // Scanner window overlay
               Positioned(
-                top: size.height * 0.3,
+                top: size.height * 0.4,
                 left: (size.width - scanArea) / 2,
                 child: Container(
                   height: scanArea * 0.5,
@@ -209,7 +264,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
             ],
           ),
         ),
-        // Result Card - Modified positioning
+        // Result Card with improved animation
         Positioned(
           left: 0,
           right: 0,
@@ -217,116 +272,140 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
           child: AnimatedBuilder(
             animation: _fadeAnimation,
             builder: (context, child) {
-              return FadeTransition(
-                opacity: _fadeAnimation,
-                child: SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(0, 1),
-                    end: Offset.zero,
-                  ).animate(_fadeAnimation),
-                  child: Container(
-                    constraints: BoxConstraints(
-                      maxHeight: MediaQuery.of(context).size.height * 0.25,
+              return Transform.translate(
+                offset: Offset(
+                  0,
+                  (1 - _fadeAnimation.value) * 300,
+                ), // Increased translation distance
+                child: FadeTransition(
+                  opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
+                    CurvedAnimation(
+                      parent: _fadeController,
+                      curve: const Interval(0.4, 1.0), // Delayed fade in
                     ),
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.6),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: Stack(
-                      children: [
-                        SingleChildScrollView(
-                          padding: const EdgeInsets.fromLTRB(
-                            20,
-                            20,
-                            80,
-                            16,
-                          ), // Added right padding for search button
-                          physics: const BouncingScrollPhysics(),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              if (_lastCode != null) _buildCodeRow(_lastCode!),
-                              if (_lastFormat != null || _lastCountry != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Row(
+                  ),
+                  child: GestureDetector(
+                    onVerticalDragUpdate: (details) {
+                      if (details.primaryDelta! > 0) {
+                        _fadeController.value -= details.primaryDelta! / 200;
+                      }
+                    },
+                    onVerticalDragEnd: (details) {
+                      if (_fadeController.value < 0.5) {
+                        _hideCard();
+                      } else {
+                        _fadeController.forward();
+                      }
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.8),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 20,
+                            spreadRadius: 5,
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Handle bar indicator
+                          Center(
+                            child: Container(
+                              margin: const EdgeInsets.only(top: 8),
+                              width: 40,
+                              height: 4,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[300],
+                                borderRadius: BorderRadius.circular(2),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(20),
+                            child: Column(
+                              children: [
+                                if (_lastCode != null) ...[
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          _lastCode!,
+                                          style: const TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 1,
+                                          ),
+                                        ),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.copy),
+                                        onPressed:
+                                            () => _copyToClipboard(_lastCode!),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                ],
+                                if (_lastFormat != null || _lastCountry != null)
+                                  Row(
                                     children: [
                                       if (_lastFormat != null)
-                                        _buildChip(_lastFormat!, Colors.blue),
-                                      if (_lastCountry != null) ...[
-                                        const SizedBox(width: 8),
-                                        _buildChip(
+                                        _buildModernChip(
+                                          _lastFormat!,
+                                          Icons.qr_code_2,
+                                          Colors.blue,
+                                        ),
+                                      const SizedBox(width: 8),
+                                      if (_lastCountry != null)
+                                        _buildModernChip(
                                           _lastCountry!,
+                                          Icons.location_on,
                                           _lastCountry!.contains(
                                                 AppConfig.USER_COUNTRY,
                                               )
                                               ? Colors.green
                                               : Colors.red,
                                         ),
-                                      ],
                                     ],
                                   ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        // Search button positioned on right center
-                        Positioned(
-                          right: 40,
-                          top: 0,
-                          bottom: 0,
-                          child: Center(
-                            child: Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: Colors.purple.withOpacity(0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: IconButton(
-                                icon: const Icon(Icons.search, size: 24),
-                                color: Colors.purple,
-                                onPressed: () {
-                                  if (_lastCode != null) {
-                                    widget.onBarcodeDetected(
-                                      _lastCode!,
-                                      _lastFormat ?? '',
-                                    );
-                                  }
-                                },
-                              ),
+                              ],
                             ),
                           ),
-                        ),
-                        // Close button
-                        Positioned(
-                          top: 0,
-                          right: 0,
-                          child: Container(
-                            height: 30,
-                            width: 30,
+                          // Search button
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 12,
+                            ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
-                              shape: BoxShape.circle,
+                              color: Colors.purple.withOpacity(0.1),
+                              borderRadius: const BorderRadius.vertical(
+                                bottom: Radius.circular(20),
+                              ),
                             ),
-                            child: IconButton(
-                              icon: const Icon(Icons.close, size: 20),
-                              padding: const EdgeInsets.all(4),
-                              constraints: const BoxConstraints(),
-                              onPressed: _hideCard,
-                              color: Colors.black,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.search, color: Colors.purple[700]),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Voir les détails',
+                                  style: TextStyle(
+                                    color: Colors.purple[700],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -338,14 +417,24 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
     );
   }
 
-  Widget _buildChip(String label, MaterialColor color) {
+  Widget _buildModernChip(String label, IconData icon, MaterialColor color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(30),
       ),
-      child: Text(label, style: TextStyle(color: color[700], fontSize: 12)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: color[700]),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(color: color[700], fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
     );
   }
 }

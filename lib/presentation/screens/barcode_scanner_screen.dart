@@ -179,7 +179,7 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
                 0,
                 10,
               ), // Add offset to position menu below icon
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withOpacity(0.9),
               position: PopupMenuPosition.under, // Force menu to appear under
               icon: const Icon(Icons.more_horiz, color: Colors.white),
               onSelected: _onMenuItemSelected,
