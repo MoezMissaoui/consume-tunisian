@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../controllers/language_controller.dart';
+import 'storage_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -166,7 +167,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                             trailing: const Icon(Icons.chevron_right),
                             onTap: () {
-                              // TODO: Storage settings
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (context) =>
+                                          const StorageSettingsScreen(),
+                                ),
+                              );
                             },
                           ),
                         ],
