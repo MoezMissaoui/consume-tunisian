@@ -38,6 +38,7 @@ dependencies:
   flutter_svg: ^2.0.17
   carousel_slider: ^5.0.0
   shared_preferences: ^2.2.2
+  intl: ^0.18.0
 
 dev_dependencies:
   flutter_test:

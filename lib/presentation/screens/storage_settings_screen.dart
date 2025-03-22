@@ -178,7 +178,6 @@ class _StorageSettingsScreenState extends State<StorageSettingsScreen> {
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(value ?? ''),
                                 Text(
                                   _formatSize(_calculateItemSize(value)),
                                   style: TextStyle(
@@ -254,7 +253,7 @@ class _StorageSettingsScreenState extends State<StorageSettingsScreen> {
                 onPressed: () => Navigator.pop(context),
                 child: Text(
                   lang.translate('cancel'),
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: TextStyle(color: Colors.black),
                 ),
               ),
               ElevatedButton(
@@ -288,7 +287,7 @@ class _StorageSettingsScreenState extends State<StorageSettingsScreen> {
                 onPressed: () => Navigator.pop(context),
                 child: Text(
                   lang.translate('cancel'),
-                  style: TextStyle(color: Colors.grey[600]),
+                  style: TextStyle(color: Colors.black),
                 ),
               ),
               ElevatedButton(

@@ -64,6 +64,11 @@ class AppTranslations {
       'totalFreed': 'Espace total libéré: {size}',
       'appStorage': 'Stockage application',
       'clearCache': 'Vider le cache',
+      'noHistory': 'Aucun historique disponible',
+      'clearHistory': 'Effacer l\'historique',
+      'clearHistoryConfirm':
+          'Voulez-vous vraiment effacer tout l\'historique ?',
+      'clear': 'Effacer',
     },
     'en': {
       'appTitle': 'Consume Tunisian',
@@ -127,6 +132,10 @@ class AppTranslations {
       'totalFreed': 'Total freed space: {size}',
       'appStorage': 'App storage',
       'clearCache': 'Clear cache',
+      'noHistory': 'No history available',
+      'clearHistory': 'Clear history',
+      'clearHistoryConfirm': 'Do you really want to clear all history?',
+      'clear': 'Clear',
     },
     'ar': {
       'appTitle': 'استهلك تونسي',
@@ -188,6 +197,10 @@ class AppTranslations {
       'totalFreed': 'إجمالي المساحة المحررة: {size}',
       'appStorage': 'تخزين التطبيق',
       'clearCache': 'مسح ذاكرة التخزين المؤقت',
+      'noHistory': 'لا يوجد سجل متاح',
+      'clearHistory': 'مسح السجل',
+      'clearHistoryConfirm': 'هل تريد حقًا مسح كل السجل؟',
+      'clear': 'مسح',
     },
   };
 }

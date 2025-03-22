@@ -1,3 +1,4 @@
+import 'package:consume_tunisian/config/barcode_countries.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -8,6 +9,8 @@ import '../widgets/flash_toggle_button_widget.dart';
 import '../screens/about_screen.dart';
 import '../screens/settings_screen.dart';
 import '../../controllers/language_controller.dart';
+import '../../services/history_manager.dart';
+import 'history_screen.dart';
 
 class BarcodeScannerScreen extends StatefulWidget {
   const BarcodeScannerScreen({super.key});
@@ -18,6 +21,7 @@ class BarcodeScannerScreen extends StatefulWidget {
 
 class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
   MobileScannerController? _scannerController;
+  final HistoryManager _historyManager = HistoryManager();
 
   @override
   void initState() {
@@ -48,7 +52,11 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
     super.dispose();
   }
 
-  void _onBarcodeScanned(String code, String format) {
+  void _onBarcodeScanned(String code, String format) async {
+    final country = getCountryFromBarcode(code) ?? 'Unknown';
+    if (!await _historyManager.isCodeAlreadySaved(code)) {
+      await _historyManager.addScan(code, format, country);
+    }
     setState(() {});
   }
 
@@ -82,7 +90,32 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
         );
         break;
       case 'history':
-        // TODO: Navigate to history page
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder:
+                (context, animation, secondaryAnimation) =>
+                    const HistoryScreen(),
+            transitionsBuilder: (
+              context,
+              animation,
+              secondaryAnimation,
+              child,
+            ) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1.0, 0.0),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+                ),
+                child: child,
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 300),
+            reverseTransitionDuration: const Duration(milliseconds: 300),
+          ),
+        );
         break;
       case 'settings':
         Navigator.push(
@@ -188,6 +221,23 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
               onSelected: _onMenuItemSelected,
               itemBuilder:
                   (BuildContext context) => [
+                    PopupMenuItem(
+                      value: 'history',
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.history,
+                            size: 20,
+                            color: Colors.white,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            lang.translate('history'),
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                        ],
+                      ),
+                    ),
                     PopupMenuItem(
                       value: 'settings',
                       child: Row(

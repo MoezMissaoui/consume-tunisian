@@ -73,13 +73,6 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
 
   void _copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
-    final lang = Provider.of<LanguageController>(context, listen: false);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(lang.translate('copied')),
-        duration: const Duration(seconds: 1),
-      ),
-    );
   }
 
   void _onBarcodeDetected(String code, String format, String? country) {
@@ -304,7 +297,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
                     child: Container(
                       margin: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withOpacity(0.9),
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
