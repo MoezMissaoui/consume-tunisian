@@ -146,24 +146,13 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
           SliverToBoxAdapter(
             child: Column(
               children: [
-                // Product Header
                 _buildProductHeader(),
-
-                // Nutriscore Section
                 if (widget.product.nutriscoreGrade != 'unknown')
                   _buildNutriscore(),
-
-                // Product Details
-                _buildDetailsSection(),
-
-                // Allergens Section
                 if (widget.product.allergens.isNotEmpty)
                   _buildAllergensSection(),
-
-                // Ingredients Section
                 if (widget.product.ingredients.isNotEmpty)
                   _buildIngredientsSection(),
-
                 const SizedBox(height: 32),
               ],
             ),
@@ -264,54 +253,147 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   Widget _buildProductHeader() {
     return Container(
-      color: Colors.white,
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.white, Colors.grey.shade50],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            widget.product.name,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          if (widget.product.brand.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              widget.product.brand,
-              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+          // Product Name and Brand with better typography
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.product.name,
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
+                    height: 1.3,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                if (widget.product.brand.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.blue.shade50,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.business, size: 18, color: Colors.blue[700]),
+                        const SizedBox(width: 8),
+                        Text(
+                          widget.product.brand,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.blue[700],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
             ),
-          ],
-          const SizedBox(height: 16),
-          _buildOriginChip(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOriginChip() {
-    final isLocal = widget.countryName.contains(AppConfig.USER_COUNTRY);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: (isLocal ? Colors.green : Colors.red).withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: (isLocal ? Colors.green : Colors.red).withOpacity(0.5),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.location_on,
-            size: 18,
-            color: isLocal ? Colors.green[700] : Colors.red[700],
           ),
-          const SizedBox(width: 8),
-          Text(
-            widget.countryName,
-            style: TextStyle(
-              color: isLocal ? Colors.green[700] : Colors.red[700],
-              fontWeight: FontWeight.w500,
+          // Origin banner with dynamic color
+          ClipRRect(
+            borderRadius: const BorderRadius.vertical(
+              bottom: Radius.circular(20),
+            ),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors:
+                      widget.countryName.contains(AppConfig.USER_COUNTRY)
+                          ? [Colors.green.shade50, Colors.green.shade100]
+                          : [Colors.red.shade50, Colors.red.shade100],
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.location_on,
+                      size: 24,
+                      color:
+                          widget.countryName.contains(AppConfig.USER_COUNTRY)
+                              ? Colors.green[700]
+                              : Colors.red[700],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.countryName.contains(AppConfig.USER_COUNTRY)
+                            ? 'Produit Local'
+                            : 'Produit Importé',
+                        style: TextStyle(
+                          color:
+                              widget.countryName.contains(
+                                    AppConfig.USER_COUNTRY,
+                                  )
+                                  ? Colors.green[700]
+                                  : Colors.red[700],
+                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        widget.countryName,
+                        style: TextStyle(
+                          color:
+                              widget.countryName.contains(
+                                    AppConfig.USER_COUNTRY,
+                                  )
+                                  ? Colors.green[600]
+                                  : Colors.red[600],
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -320,140 +402,180 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   Widget _buildNutriscore() {
-    return Center(
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Column(
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Nutri-Score',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              IconButton(
+                icon: const Icon(Icons.info_outline),
+                onPressed: _showNutriScoreInfo,
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
           SvgPicture.network(
             '$_nutriscoreBaseUrl${widget.product.nutriscoreGrade}-new-en.svg',
             height: 80,
-          ),
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: _showNutriScoreInfo,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDetailsSection() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildInfoRow(AppConfig.LABEL_NAME, widget.product.name, false),
-            const Divider(),
-            _buildInfoRow(AppConfig.LABEL_BRAND, widget.product.brand, false),
-            const Divider(),
-            _buildInfoRow(AppConfig.LABEL_ORIGIN, widget.product.origin, false),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildAllergensSection() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Allergènes:',
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.red),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.red.shade50, Colors.red.shade100],
+              ),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(20),
+              ),
             ),
-            const SizedBox(height: 8),
-            Wrap(
+            child: Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: Colors.red[700]),
+                const SizedBox(width: 8),
+                Text(
+                  'Allergènes',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.red[700],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Wrap(
               spacing: 8,
               runSpacing: 8,
               children:
-                  widget.product.allergens
-                      .map(
-                        (allergen) => Chip(
-                          backgroundColor: Colors.red[50],
-                          label: Text(allergen),
-                          labelStyle: TextStyle(color: Colors.red[900]),
+                  widget.product.allergens.map((allergen) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.red[50],
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.red[200]!),
+                      ),
+                      child: Text(
+                        allergen,
+                        style: TextStyle(
+                          color: Colors.red[900],
+                          fontWeight: FontWeight.w500,
                         ),
-                      )
-                      .toList(),
+                      ),
+                    );
+                  }).toList(),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildIngredientsSection() {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Ingrédients:',
-              style: TextStyle(fontWeight: FontWeight.bold),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                const Icon(Icons.restaurant_menu, size: 24),
+                const SizedBox(width: 8),
+                Text(
+                  'Ingrédients',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[800],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 8),
-            Wrap(
+          ),
+          const Divider(height: 1),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Wrap(
               spacing: 8,
               runSpacing: 8,
               children:
-                  widget.product.ingredients
-                      .map(
-                        (ingredient) => Chip(
-                          backgroundColor: Colors.grey[200],
-                          label: Text(ingredient),
-                        ),
-                      )
-                      .toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoRow(String label, String value, bool showCopy) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Expanded(
-            child: RichText(
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text: '$label: ',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  TextSpan(
-                    text: value,
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                ],
-              ),
+                  widget.product.ingredients.map((ingredient) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.grey[300]!),
+                      ),
+                      child: Text(
+                        ingredient,
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    );
+                  }).toList(),
             ),
           ),
-          if (showCopy)
-            IconButton(
-              icon: const Icon(Icons.copy, size: 20),
-              onPressed: () => _copyToClipboard(value),
-              tooltip: AppConfig.COPY_TOOLTIP,
-            ),
         ],
       ),
     );
