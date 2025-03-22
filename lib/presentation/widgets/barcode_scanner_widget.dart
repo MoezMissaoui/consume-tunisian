@@ -179,6 +179,207 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
     );
   }
 
+  Widget _buildResultCard() {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 30,
+            spreadRadius: 0,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: -5,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Drag Handle
+          Container(
+            margin: const EdgeInsets.only(top: 12),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+          // Content Area
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+            child: Column(
+              children: [
+                if (_lastCode != null) ...[
+                  // Barcode Section
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _lastCode!,
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                              if (_lastFormat != null)
+                                Text(
+                                  _lastFormat!,
+                                  style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontSize: 14,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.copy),
+                          onPressed: () => _copyToClipboard(_lastCode!),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                // Chips Section
+                if (_lastFormat != null || _lastCountry != null)
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        if (_lastFormat != null)
+                          _buildAnimatedChip(
+                            _lastFormat!,
+                            Icons.qr_code_2,
+                            Colors.blue,
+                          ),
+                        const SizedBox(width: 8),
+                        if (_lastCountry != null)
+                          _buildAnimatedChip(
+                            _lastCountry!,
+                            Icons.location_on,
+                            _lastCountry!.contains(AppConfig.USER_COUNTRY)
+                                ? Colors.green
+                                : Colors.red,
+                          ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          // Action Button
+          InkWell(
+            onTap:
+                _lastCode != null && !_isLoading
+                    ? () =>
+                        _checkProductDetails(context, _lastCode!, _lastCountry)
+                    : null,
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.purple.shade200, Colors.purple.shade400],
+                ),
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(24),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (_isLoading)
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                  else
+                    const Icon(Icons.search, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Text(
+                    _isLoading
+                        ? Provider.of<LanguageController>(
+                          context,
+                          listen: false,
+                        ).translate('loading')
+                        : Provider.of<LanguageController>(
+                          context,
+                          listen: false,
+                        ).translate('seeDetails'),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnimatedChip(String label, IconData icon, MaterialColor color) {
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 300),
+      tween: Tween(begin: 0, end: 1),
+      builder: (context, value, child) {
+        return Transform.scale(
+          scale: value,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(30),
+              border: Border.all(color: color.withOpacity(0.3)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 18, color: color[700]),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: color[700],
+                    fontWeight: FontWeight.w500,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final lang = Provider.of<LanguageController>(context);
@@ -342,162 +543,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
                         _fadeController.forward();
                       }
                     },
-                    child: Container(
-                      margin: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 20,
-                            spreadRadius: 5,
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Handle bar indicator
-                          Center(
-                            child: Container(
-                              margin: const EdgeInsets.only(top: 8),
-                              width: 40,
-                              height: 4,
-                              decoration: BoxDecoration(
-                                color: Colors.grey[300],
-                                borderRadius: BorderRadius.circular(2),
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(20),
-                            child: Column(
-                              children: [
-                                if (_lastCode != null) ...[
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          _lastCode!,
-                                          style: const TextStyle(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold,
-                                            letterSpacing: 1,
-                                          ),
-                                        ),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.copy),
-                                        onPressed:
-                                            () => _copyToClipboard(_lastCode!),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 12),
-                                ],
-                                if (_lastFormat != null || _lastCountry != null)
-                                  Row(
-                                    children: [
-                                      if (_lastFormat != null)
-                                        _buildChip(
-                                          _lastFormat!,
-                                          Icons.qr_code_2,
-                                          Colors.blue,
-                                        ),
-                                      const SizedBox(width: 8),
-                                      if (_lastCountry != null)
-                                        _buildChip(
-                                          _lastCountry!,
-                                          Icons.location_on,
-                                          _lastCountry!.contains(
-                                                AppConfig.USER_COUNTRY,
-                                              )
-                                              ? Colors.green
-                                              : Colors.red,
-                                        ),
-                                    ],
-                                  ),
-                              ],
-                            ),
-                          ),
-                          // Search button
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.purple.withOpacity(0.1),
-                              borderRadius: const BorderRadius.vertical(
-                                bottom: Radius.circular(20),
-                              ),
-                            ),
-                            child: InkWell(
-                              onTap:
-                                  _lastCode != null && !_isLoading
-                                      ? () => _checkProductDetails(
-                                        context,
-                                        _lastCode!,
-                                        _lastCountry,
-                                      )
-                                      : null,
-                              child: Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                  vertical: 12,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.purple.withOpacity(0.1),
-                                  borderRadius: const BorderRadius.vertical(
-                                    bottom: Radius.circular(20),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    if (_isLoading)
-                                      SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor:
-                                              AlwaysStoppedAnimation<Color>(
-                                                Colors.purple[700] ??
-                                                    Colors.purple,
-                                              ),
-                                        ),
-                                      )
-                                    else
-                                      Icon(
-                                        Icons.search,
-                                        color: Colors.purple[700]?.withOpacity(
-                                          _lastCode != null ? 1.0 : 0.5,
-                                        ),
-                                      ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      _isLoading
-                                          ? lang.translate('loading')
-                                          : lang.translate('seeDetails'),
-                                      style: TextStyle(
-                                        color: Colors.purple[700]?.withOpacity(
-                                          _lastCode != null ? 1.0 : 0.5,
-                                        ),
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    child: _buildResultCard(),
                   ),
                 ),
               );
