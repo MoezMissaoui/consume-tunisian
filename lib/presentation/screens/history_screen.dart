@@ -249,109 +249,146 @@ class _HistoryScreenState extends State<HistoryScreen>
         borderRadius: BorderRadius.circular(16),
         child: Material(
           color: Colors.transparent,
-          child: InkWell(
-            onTap: () => _showDetailsBottomSheet(context, item),
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            item.code,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        _buildIconButton(
+                          Icons.copy_rounded,
+                          () => _copyToClipboard(item.code),
+                          Colors.blue,
+                        ),
+                        _buildIconButton(
+                          Icons.delete_outline_rounded,
+                          () => _showDeleteDialog(context, lang, item.code),
+                          Colors.red,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
                         children: [
-                          Expanded(
-                            child: Text(
-                              item.code,
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
+                          _buildChip(item.format, Icons.qr_code_2, Colors.blue),
+                          const SizedBox(width: 8),
+                          _buildChip(
+                            item.country,
+                            Icons.location_on,
+                            _getCountryColor(item.country),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Colors.purple.shade200, Colors.purple.shade400],
+                  ),
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () => _handleDirectProductDetails(item),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.access_time,
+                                size: 16,
+                                color: Colors.white.withOpacity(0.9),
                               ),
-                            ),
+                              const SizedBox(width: 4),
+                              Text(
+                                DateFormat(
+                                  'dd/MM/yyyy HH:mm',
+                                ).format(item.scanDate),
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           ),
-                          _buildIconButton(
-                            Icons.copy_rounded,
-                            () => _copyToClipboard(item.code),
-                            Colors.blue,
-                          ),
-                          _buildIconButton(
-                            Icons.delete_outline_rounded,
-                            () => _showDeleteDialog(context, lang, item.code),
-                            Colors.red,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            _buildChip(
-                              item.format,
-                              Icons.qr_code_2,
-                              Colors.blue,
-                            ),
-                            const SizedBox(width: 8),
-                            _buildChip(
-                              item.country,
-                              Icons.location_on,
-                              _getCountryColor(item.country),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[50],
-                    border: Border(top: BorderSide(color: Colors.grey[200]!)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.access_time,
-                            size: 16,
-                            color: Colors.grey[600],
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            DateFormat(
-                              'dd/MM/yyyy HH:mm',
-                            ).format(item.scanDate),
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                lang.translate('seeDetails'),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(
+                                Icons.arrow_forward_ios,
+                                color: Colors.white,
+                                size: 16,
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                      Text(
-                        lang.translate('tapForDetails'),
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 12,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  Future<void> _handleDirectProductDetails(ScanHistory item) async {
+    try {
+      final product = await ProductApi.getProduct(item.code);
+      if (!mounted) return;
+
+      if (product != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder:
+                (context) => ProductDetailsScreen(
+                  product: product,
+                  countryName: item.country,
+                  barcodeType: item.format,
+                ),
+          ),
+        );
+      } else {
+        _showError('noDetails', Colors.orange);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      _showError('error', Colors.red);
+    }
   }
 
   Widget _buildIconButton(
