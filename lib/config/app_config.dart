@@ -46,4 +46,6 @@ class AppConfig {
   static const String CLOSE = "Fermer";
   static const String PRODUCT_NOT_FOUND = "Produit non trouvé";
   static const String INVALID_FORMAT = "Format invalide";
+
+  static const String USER_COUNTRY = "Tunisia";
 }

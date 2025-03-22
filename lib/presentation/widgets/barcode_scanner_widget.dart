@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../config/barcode_countries.dart';
 import 'flash_toggle_button_widget.dart';
 import 'corner_bracket_painter_widget.dart';
+import '../../config/app_config.dart';
 
 typedef BarcodeCallback = void Function(String code, String format);
 
@@ -235,7 +236,14 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
                                         _buildChip(_lastFormat!, Colors.blue),
                                       if (_lastCountry != null) ...[
                                         const SizedBox(width: 8),
-                                        _buildChip(_lastCountry!, Colors.green),
+                                        _buildChip(
+                                          _lastCountry!,
+                                          _lastCountry!.contains(
+                                                AppConfig.USER_COUNTRY,
+                                              )
+                                              ? Colors.green
+                                              : Colors.red,
+                                        ),
                                       ],
                                     ],
                                   ),
