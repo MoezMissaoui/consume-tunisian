@@ -4,6 +4,8 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import '../widgets/barcode_scanner_widget.dart';
 import '../../config/app_config.dart';
 import '../widgets/flash_toggle_button_widget.dart';
+import '../screens/about_screen.dart';
+import '../screens/settings_screen.dart';
 
 class BarcodeScannerScreen extends StatefulWidget {
   const BarcodeScannerScreen({super.key});
@@ -18,7 +20,16 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeController();
+    // Initialize controller immediately
+    _scannerController = MobileScannerController(
+      facing: CameraFacing.back,
+      formats: [
+        BarcodeFormat.ean8,
+        BarcodeFormat.ean13,
+        BarcodeFormat.upcA,
+        BarcodeFormat.upcE,
+      ],
+    );
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -27,14 +38,6 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
         systemNavigationBarIconBrightness: Brightness.light,
       ),
     );
-  }
-
-  void _initializeController() async {
-    _scannerController = MobileScannerController(
-      facing: CameraFacing.back,
-      torchEnabled: false,
-    );
-    setState(() {});
   }
 
   @override
@@ -49,24 +52,69 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
 
   void _onMenuItemSelected(String value) {
     switch (value) {
+      case 'about':
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder:
+                (context, animation, secondaryAnimation) => const AboutScreen(),
+            transitionsBuilder: (
+              context,
+              animation,
+              secondaryAnimation,
+              child,
+            ) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1.0, 0.0),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+                ),
+                child: child,
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 300),
+            reverseTransitionDuration: const Duration(milliseconds: 300),
+          ),
+        );
+        break;
       case 'history':
         // TODO: Navigate to history page
         break;
       case 'settings':
-        // TODO: Navigate to settings page
-        break;
-      case 'about':
-        // TODO: Navigate to about page
+        Navigator.push(
+          context,
+          PageRouteBuilder(
+            pageBuilder:
+                (context, animation, secondaryAnimation) =>
+                    const SettingsScreen(),
+            transitionsBuilder: (
+              context,
+              animation,
+              secondaryAnimation,
+              child,
+            ) {
+              return SlideTransition(
+                position: Tween<Offset>(
+                  begin: const Offset(1.0, 0.0),
+                  end: Offset.zero,
+                ).animate(
+                  CurvedAnimation(parent: animation, curve: Curves.easeInOut),
+                ),
+                child: child,
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 300),
+            reverseTransitionDuration: const Duration(milliseconds: 300),
+          ),
+        );
         break;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_scannerController == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-
     return Scaffold(
       backgroundColor: Colors.black,
       extendBodyBehindAppBar: true,
@@ -74,49 +122,92 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        actions: [
-          // Flash toggle button
-          Container(
-            height: 43,
-            width: 43,
-            margin: EdgeInsets.only(right: 10),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.5),
-              shape: BoxShape.circle,
+        leadingWidth:
+            200, // Increase leading width to accommodate multiple buttons
+        leading: Row(
+          children: [
+            Container(
+              height: 43,
+              width: 43,
+              // margin: const EdgeInsets.only(left: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: FlashToggleButtonWidget(controller: _scannerController!),
             ),
-            child: FlashToggleButtonWidget(controller: _scannerController!),
-          ),
+            const SizedBox(width: 8),
+            Container(
+              height: 43,
+              width: 43,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.flip_camera_ios, color: Colors.white),
+                onPressed: () => _scannerController?.switchCamera(),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              height: 43,
+              width: 43,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.aspect_ratio, color: Colors.white),
+                onPressed: () {
+                  // TODO: Handle aspect ratio toggle
+                },
+              ),
+            ),
+          ],
+        ),
+        actions: [
           Container(
             height: 43,
             width: 43,
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.5),
+              color: Colors.white.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: PopupMenuButton<String>(
-              icon: Container(
-                child: const Icon(Icons.more_horiz, color: Colors.white),
-              ),
+              offset: const Offset(
+                0,
+                10,
+              ), // Add offset to position menu below icon
+              color: Colors.black.withOpacity(0.5),
+              position: PopupMenuPosition.under, // Force menu to appear under
+              icon: const Icon(Icons.more_horiz, color: Colors.white),
               onSelected: _onMenuItemSelected,
               itemBuilder:
                   (BuildContext context) => [
-                    const PopupMenuItem(
-                      value: 'history',
-                      child: Row(
-                        children: [
-                          Icon(Icons.history, size: 20),
-                          SizedBox(width: 8),
-                          Text('Historique'),
-                        ],
-                      ),
-                    ),
+                    // const PopupMenuItem(
+                    //   value: 'history',
+                    //   child: Row(
+                    //     children: [
+                    //       Icon(Icons.history, size: 20, color: Colors.white),
+                    //       SizedBox(width: 8),
+                    //       Text(
+                    //         'Historique',
+                    //         style: TextStyle(color: Colors.white),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
                     const PopupMenuItem(
                       value: 'settings',
                       child: Row(
                         children: [
-                          Icon(Icons.settings, size: 20),
+                          Icon(Icons.settings, size: 20, color: Colors.white),
                           SizedBox(width: 8),
-                          Text('Paramètres'),
+                          Text(
+                            'Paramètres',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ],
                       ),
                     ),
@@ -124,9 +215,12 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
                       value: 'about',
                       child: Row(
                         children: [
-                          Icon(Icons.info, size: 20),
+                          Icon(Icons.info, size: 20, color: Colors.white),
                           SizedBox(width: 8),
-                          Text('À propos'),
+                          Text(
+                            'À propos',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ],
                       ),
                     ),

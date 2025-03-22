@@ -37,7 +37,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
     super.initState();
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 1),
     );
     _fadeAnimation = CurvedAnimation(
       parent: _fadeController,
@@ -120,7 +120,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
                       onPressed: () => _copyToClipboard(code),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
-                      color: Colors.grey,
+                      color: Colors.black,
                     ),
                   ],
                 ),
@@ -202,7 +202,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
                     ),
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Colors.white.withOpacity(0.6),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.1),
@@ -245,7 +245,7 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
                         ),
                         // Search button positioned on right center
                         Positioned(
-                          right: 30,
+                          right: 40,
                           top: 0,
                           bottom: 0,
                           child: Center(
@@ -273,14 +273,22 @@ class _BarcodeScannerWidgetState extends State<BarcodeScannerWidget>
                         ),
                         // Close button
                         Positioned(
-                          top: -7,
-                          right: -7,
-                          child: IconButton(
-                            icon: const Icon(Icons.close, size: 20),
-                            padding: const EdgeInsets.all(4),
-                            constraints: const BoxConstraints(),
-                            onPressed: _hideCard,
-                            color: Colors.grey,
+                          top: 0,
+                          right: 0,
+                          child: Container(
+                            height: 30,
+                            width: 30,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                            child: IconButton(
+                              icon: const Icon(Icons.close, size: 20),
+                              padding: const EdgeInsets.all(4),
+                              constraints: const BoxConstraints(),
+                              onPressed: _hideCard,
+                              color: Colors.black,
+                            ),
                           ),
                         ),
                       ],
