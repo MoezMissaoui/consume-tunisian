@@ -1,9 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../controllers/language_controller.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool _notificationsEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkNotificationPermission();
+  }
+
+  Future<void> _checkNotificationPermission() async {
+    final status = await Permission.notification.status;
+    setState(() {
+      _notificationsEnabled = status.isGranted;
+    });
+  }
+
+  Future<void> _toggleNotifications() async {
+    if (_notificationsEnabled) {
+      openAppSettings();
+    } else {
+      final status = await Permission.notification.request();
+      setState(() {
+        _notificationsEnabled = status.isGranted;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +92,26 @@ class SettingsScreen extends StatelessWidget {
                                   languageController.setLanguage(newValue);
                                 }
                               },
+                            ),
+                          ),
+                          const Divider(),
+                          ListTile(
+                            leading: const Icon(Icons.notifications),
+                            title: Text(
+                              languageController.translate('notifications'),
+                            ),
+                            subtitle: Text(
+                              _notificationsEnabled
+                                  ? languageController.translate(
+                                    'notificationsEnabled',
+                                  )
+                                  : languageController.translate(
+                                    'notificationsDisabled',
+                                  ),
+                            ),
+                            trailing: Switch(
+                              value: _notificationsEnabled,
+                              onChanged: (bool value) => _toggleNotifications(),
                             ),
                           ),
                         ],

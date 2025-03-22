@@ -45,6 +45,10 @@ class AppTranslations {
       'notificationsSettings': 'Gérer les notifications',
       'storage': 'Stockage',
       'storageSettings': 'Gérer le cache et les données',
+      'notificationsEnabled': 'Notifications activées',
+      'notificationsDisabled': 'Notifications désactivées',
+      'notificationsPermissionRequired':
+          'Permission requise pour les notifications',
     },
     'en': {
       'appTitle': 'Consume Tunisian',
@@ -90,6 +94,10 @@ class AppTranslations {
       'notificationsSettings': 'Manage notifications',
       'storage': 'Storage',
       'storageSettings': 'Manage cache and data',
+      'notificationsEnabled': 'Notifications enabled',
+      'notificationsDisabled': 'Notifications disabled',
+      'notificationsPermissionRequired':
+          'Permission required for notifications',
     },
     'ar': {
       'appTitle': 'استهلك تونسي',
@@ -134,6 +142,9 @@ class AppTranslations {
       'notificationsSettings': 'إدارة الإشعارات',
       'storage': 'التخزين',
       'storageSettings': 'إدارة ذاكرة التخزين المؤقت والبيانات',
+      'notificationsEnabled': 'الإشعارات مفعلة',
+      'notificationsDisabled': 'الإشعارات معطلة',
+      'notificationsPermissionRequired': 'مطلوب إذن للإشعارات',
     },
   };
 }
